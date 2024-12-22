@@ -1,0 +1,35 @@
+/// <reference types="cypress"/>
+
+describe('Login feature', () => {
+    it('user login with valid credentials', () => {
+    cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+    cy.get('[class="oxd-text oxd-text--h5 orangehrm-login-title"]').should('have.text','Login');
+    cy.get('[name="username"]').type('Admin');
+    cy.get('[name="password"]').type('admin123');
+    cy.get('[class="oxd-button oxd-button--medium oxd-button--main orangehrm-login-button"]').click();
+    cy.get('[class="oxd-text oxd-text--h6 oxd-topbar-header-breadcrumb-module"]').should('have.text','Dashboard')
+    })
+      
+    it('Gagal login dengan username salah', () => {
+    cy.get('#txtUsername').type('salah')
+    cy.get('#txtPassword').type('admin123')
+    cy.get('#btnLogin').click()
+    cy.get('#spanMessage').should('be.visible')
+    cy.get('#spanMessage').should('contain', 'Invalid credentials')
+    })
+      
+    it('Gagal login dengan password salah', () => {
+    cy.get('#txtUsername').type('Admin')
+    cy.get('#txtPassword').type('salah')
+    cy.get('#btnLogin').click()
+    cy.get('#spanMessage').should('be.visible')
+    cy.get('#spanMessage').should('contain', 'Invalid credentials')
+    })
+      
+    it('Gagal login dengan kredensial kosong', () => {
+    cy.get('#btnLogin').click()
+    cy.get('#spanMessage').should('be.visible')
+    cy.get('#spanMessage').should('contain', 'Username cannot be empty')
+    })
+      
+})
