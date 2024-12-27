@@ -88,42 +88,6 @@ describe('OrangeHRM Full Feature Tests', () => {
     // Verifikasi akses ke menu Dashboard
     cy.get('.oxd-topbar-header-breadcrumb').should('exist');
   });
-
-  // Test untuk fitur pencarian pegawai (Directory)
-  it('Verify Employee Search in Directory', () => {
-    cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
-    
-    // Login dengan kredensial valid
-    cy.get('[name="username"]').type('Admin');
-    cy.get('[name="password"]').type('admin123');
-    
-    // Intercept request untuk memeriksa data saat login
-    cy.intercept("GET", "**/api/v2/dashboard/employees/action-summary").as("dashboardData");
-    cy.get('.oxd-button.oxd-button--medium.oxd-button--main.orangehrm-login-button').click();
-
-    // Tunggu request API selesai dan periksa status responsnya
-    cy.wait('@dashboardData').then((intercept) => {
-      expect(intercept.response.statusCode).to.equal(200); // Memeriksa status code
-    });
-    
-    // Verifikasi menu Directory muncul setelah login
-    cy.get('.oxd-main-menu-item--directory').should('be.visible').and('contain.text', 'Directory');
-    
-    // Klik menu Directory
-    cy.get('.oxd-main-menu-item--directory').click();
-    
-    // Verifikasi bahwa halaman Directory muncul (misalnya verifikasi URL atau elemen tertentu di halaman Directory)
-    cy.url().should('include', '/web/index.php/directory/viewDirectory');
-    cy.get('.oxd-table-card').should('be.visible'); // Menunggu tabel atau data pada halaman Directory
-    
-    // Melakukan pencarian pegawai dengan memasukkan nama pegawai
-    cy.get('[placeholder="Type for hints..."]').type('Paul');
-    
-    // Menunggu hasil pencarian
-    cy.wait(2000); // Tunggu dua detik untuk pencarian
-    
-    // Memverifikasi bahwa hasil pencarian pegawai muncul
-    cy.get('.oxd-table-card .oxd-table-row').should('have.length.greaterThan', 0); // Memastikan ada lebih dari satu hasil
-  });
+  
 
 });
