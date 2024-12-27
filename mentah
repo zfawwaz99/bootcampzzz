@@ -1,39 +1,129 @@
 /// <reference types="cypress" />
 
-describe('Login feature', () => {
-    // Verify the login page loads correctly
-    it('Verify Login Page Loads Correctly', () => {
-        cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
-        cy.get('.oxd-text.oxd-text--h5.orangehrm-login-title').should('have.text', 'Login');
+describe('OrangeHRM Full Feature Tests', () => {
+
+  // Test untuk memastikan halaman Login dimuat dengan benar
+  it('Verify Login Page Loads Correctly', () => {
+    cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+    cy.get('.oxd-text.oxd-text--h5.orangehrm-login-title').should('have.text', 'Login');
+  });
+
+  // Test untuk login dengan kredensial yang valid
+  it('Login with Valid Credentials', () => {
+    cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+    
+    // Mengisi field username dan password
+    cy.get('[name="username"]').type('Admin');
+    cy.get('[name="password"]').type('admin123');
+    
+    // Intercept request API untuk memeriksa respons dashboard setelah login
+    cy.intercept("GET", "**/api/v2/dashboard/employees/action-summary").as("dashboardData");
+
+    // Klik tombol login
+    cy.get('.oxd-button.oxd-button--medium.oxd-button--main.orangehrm-login-button').click();
+    
+    // Tunggu hingga API request selesai dan periksa status response-nya
+    cy.wait('@dashboardData').then((intercept) => {
+      expect(intercept.response.statusCode).to.equal(200); // Memeriksa status code
     });
 
-    // Verify User Login with Valid Credentials
-    it('User Login with Valid Credentials', () => {
-        cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
-        cy.get('[name="username"]').type('Admin');
-        cy.get('[name="password"]').type('admin123');
-        cy.intercept("GET", "**/api/v2/dashboard/employees/action-summary").as("actionSummary");
-        cy.get('.oxd-button.oxd-button--medium.oxd-button--main.orangehrm-login-button').click();
-        
-        cy.wait("@actionSummary").then((intercept) => {
-            // Verifikasi status response dari intercept
-            expect(intercept.response.statusCode).to.equal(200);
-        });
+    // Verifikasi halaman Dashboard
+    cy.get('.oxd-text.oxd-text--h6.oxd-topbar-header-breadcrumb-module').should('have.text', 'Dashboard');
+    cy.url().should('include', '/web/index.php/dashboard/index');
+  });
 
-        // Verifikasi halaman dashboard
-        cy.get('.oxd-text.oxd-text--h6.oxd-topbar-header-breadcrumb-module').should('have.text', 'Dashboard');
-        cy.url().should('include', '/web/index.php/dashboard/index');
-        cy.get('.oxd-text.oxd-text--h6.oxd-topbar-header-breadcrumb-module').should('exist');
+  // Test untuk login dengan kredensial yang tidak valid
+  it('Login with Invalid Credentials', () => {
+    cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+    
+    // Mengisi field username dan password dengan data tidak valid
+    cy.get('[name="username"]').type('InvalidUser');
+    cy.get('[name="password"]').type('InvalidPassword');
+    cy.get('.oxd-button.oxd-button--medium.oxd-button--main.orangehrm-login-button').click();
+
+    // Verifikasi pesan error
+    cy.get('.oxd-alert-content').should('have.text', 'Invalid credentials');
+  });
+
+  // Test untuk alur Forgot Password
+  describe('OrangeHRM Forgot Password', () => {
+    it('Forgot password berhasil', () => {
+      cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+      
+      // Klik link 'Forgot your password?'
+      cy.get('.orangehrm-login-forgot-header').click();
+      
+      // Pastikan kita berada di halaman reset password dengan mengecek elemen tertentu
+      cy.url().should('include', '/web/index.php/auth/requestPasswordReset');
+      
+      // Isi form untuk reset password
+      cy.get('input[name="username"]').type('Admin');
+      
+      // Klik tombol reset password
+      cy.get('button[type="submit"]').click(); // Menggunakan type submit untuk tombol reset
+  
+      // Verifikasi pesan sukses setelah reset password berhasil
+      cy.get('.oxd-toast-container.oxd-toast-container--bottom');
+
     });
+  });
 
-    // Verify Login with Invalid Credentials
-    it('User Login with Invalid Credentials', () => {
-        cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
-        cy.get('[name="username"]').type('InvalidUser');
-        cy.get('[name="password"]').type('InvalidPassword');
-        cy.get('.oxd-button.oxd-button--medium.oxd-button--main.orangehrm-login-button').click();
-
-        // Verifikasi pesan error
-        cy.get('.oxd-alert-content').should('have.text', 'Invalid credentials');
+  // Test untuk login dan mengakses dashboard setelah berhasil
+  it('Verify Dashboard Access after Login', () => {
+    cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+    
+    // Login dengan kredensial valid
+    cy.get('[name="username"]').type('Admin');
+    cy.get('[name="password"]').type('admin123');
+    
+    // Intercept request untuk memeriksa data saat login
+    cy.intercept("GET", "**/api/v2/dashboard/employees/action-summary").as("dashboardData");
+    cy.get('.oxd-button.oxd-button--medium.oxd-button--main.orangehrm-login-button').click();
+    
+    // Tunggu request API selesai dan periksa status responsnya
+    cy.wait('@dashboardData').then((intercept) => {
+      expect(intercept.response.statusCode).to.equal(200); // Memeriksa status code
     });
+    
+    // Verifikasi akses ke menu Dashboard
+    cy.get('.oxd-topbar-header-breadcrumb').should('exist');
+  });
+
+  // Test untuk fitur pencarian pegawai (Directory)
+  it('Verify Employee Search in Directory', () => {
+    cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+    
+    // Login dengan kredensial valid
+    cy.get('[name="username"]').type('Admin');
+    cy.get('[name="password"]').type('admin123');
+    
+    // Intercept request untuk memeriksa data saat login
+    cy.intercept("GET", "**/api/v2/dashboard/employees/action-summary").as("dashboardData");
+    cy.get('.oxd-button.oxd-button--medium.oxd-button--main.orangehrm-login-button').click();
+
+    // Tunggu request API selesai dan periksa status responsnya
+    cy.wait('@dashboardData').then((intercept) => {
+      expect(intercept.response.statusCode).to.equal(200); // Memeriksa status code
+    });
+    
+    // Verifikasi menu Directory muncul setelah login
+    cy.get('.oxd-main-menu-item--directory').should('be.visible').and('contain.text', 'Directory');
+    
+    // Klik menu Directory
+    cy.get('.oxd-main-menu-item--directory').click();
+    
+    // Verifikasi bahwa halaman Directory muncul (misalnya verifikasi URL atau elemen tertentu di halaman Directory)
+    cy.url().should('include', '/web/index.php/directory/viewDirectory');
+    cy.get('.oxd-table-card').should('be.visible'); // Menunggu tabel atau data pada halaman Directory
+    
+    // Melakukan pencarian pegawai dengan memasukkan nama pegawai
+    cy.get('[placeholder="Type for hints..."]').type('Paul');
+    
+    // Menunggu hasil pencarian
+    cy.wait(2000); // Tunggu dua detik untuk pencarian
+    
+    // Memverifikasi bahwa hasil pencarian pegawai muncul
+    cy.get('.oxd-table-card .oxd-table-row').should('have.length.greaterThan', 0); // Memastikan ada lebih dari satu hasil
+  });
+
 });
