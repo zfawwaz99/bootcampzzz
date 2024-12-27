@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-describe('OrangeHRM Full Feature Tests', () => {
+describe('OrangeHRM Feature Tests', () => {
 
   // Test untuk memastikan halaman Login dimuat dengan benar
   it('Verify Login Page Loads Correctly', () => {
@@ -112,7 +112,7 @@ describe('OrangeHRM Full Feature Tests', () => {
     cy.get('button[type="submit"]').click();
 
     // Verifikasi bahwa karyawan berhasil ditambahkan
-    cy.url().should('include', '/web/index.php/pim/viewPersonalDetails');
+    cy.url().should('include', '/web/index.php/pim/viewPersonalDetails')
   });
 
   // Test untuk menghapus karyawan
