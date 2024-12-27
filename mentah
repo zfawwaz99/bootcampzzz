@@ -116,4 +116,29 @@ describe('OrangeHRM Full Feature Tests', () => {
     cy.get('.oxd-toast-container');
   });
 
+  // Test untuk menghapus karyawan
+  it('Delete Employee', () => {
+    cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+
+    // Login dengan kredensial valid
+    cy.get('[name="username"]').type('Admin');
+    cy.get('[name="password"]').type('admin123');
+    cy.get('.oxd-button.oxd-button--medium.oxd-button--main.orangehrm-login-button').click();
+
+    // Klik menu PIM
+    cy.get('.oxd-main-menu-item').contains('PIM').click();
+
+    // Pilih karyawan pertama dalam daftar untuk dihapus
+    cy.get('.oxd-table-card .oxd-table-row').first().find('.oxd-checkbox-input').click();
+
+    // Klik tombol Delete
+    cy.get('.oxd-button.oxd-button--medium.oxd-button--label-danger').click();
+
+    // Konfirmasi penghapusan
+    cy.get('.oxd-button--label-danger').contains('Yes, Delete').click();
+
+    // Verifikasi karyawan berhasil dihapus
+    cy.get('.oxd-toast-container').should('be.visible').and('contain.text', 'Successfully Deleted');
+  });
+
 });
