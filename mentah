@@ -88,6 +88,32 @@ describe('OrangeHRM Full Feature Tests', () => {
     // Verifikasi akses ke menu Dashboard
     cy.get('.oxd-topbar-header-breadcrumb').should('exist');
   });
-  
+
+  // Test untuk menambahkan karyawan baru
+  it('Add New Employee', () => {
+    cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+
+    // Login dengan kredensial valid
+    cy.get('[name="username"]').type('Admin');
+    cy.get('[name="password"]').type('admin123');
+    cy.get('.oxd-button.oxd-button--medium.oxd-button--main.orangehrm-login-button').click();
+
+    // Klik menu PIM
+    cy.get('.oxd-main-menu-item').contains('PIM').click();
+
+    // Klik tombol "Add Employee"
+    cy.get('.oxd-button.oxd-button--medium.oxd-button--secondary').contains('Add').click();
+
+    // Isi data karyawan baru
+    cy.get('[name="firstName"]').type('Jane');
+    cy.get('[name="lastName"]').type('Smith');
+
+    // Klik tombol Save
+    cy.get('button[type="submit"]').click();
+
+    // Verifikasi bahwa karyawan berhasil ditambahkan
+    cy.url().should('include', '/web/index.php/pim/viewPersonalDetails');
+    cy.get('.oxd-toast-container');
+  });
 
 });
